@@ -1,0 +1,266 @@
+openapi: 3.0.0
+info:
+  title: Pet List Service API
+  version: 1.0.0
+  description: >
+    This API provides pet listing functionality for the Shaggy Mission pet adoption system.
+    The service allows browsing and discovery of pet records from the MongoDB database with
+    efficient pagination support. This service is designed to help potential adopters,
+    rescue organizations, and volunteers browse through available pets waiting for their
+    forever homes. The API provides comprehensive pet information including health status,
+    location, images, and adoption details to facilitate informed adoption decisions.
+
+servers:
+  - url: http://localhost:3009
+    description: Development server
+
+paths:
+  /pets/list:
+    get:
+      summary: List pets with pagination
+      description: >
+        Retrieves a paginated list of pet records from the database. This endpoint provides
+        comprehensive pet information including all attributes, creation timestamps, and
+        adoption status. The service implements efficient pagination with a fixed page size
+        of 10 pets per page to ensure optimal performance and user experience.
+        
+        **Pagination Details:**
+        - Fixed page size: 10 pets per page
+        - Page numbering starts from 1
+        - Returns total page count for navigation
+        - Efficient MongoDB skip/limit implementation
+        
+        **Pet Information Included:**
+        - Complete pet profile (name, breed, age, health status)
+        - Location and description information
+        - Image URLs for pet photos
+        - Creation and update timestamps
+        - Unique MongoDB ObjectId for reference
+        
+        **Performance Features:**
+        - Optimized database queries with pagination
+        - Controlled memory usage with fixed page sizes
+        - Total count calculation for UI navigation
+        - Error handling for database connectivity issues
+        
+        **Common Use Cases:**
+        - Browse available pets for adoption
+        - Administrative pet management overview
+        - Mobile app pet discovery interface
+        - Integration with search and filter systems
+      tags:
+        - Pet Browsing
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: >
+            Page number for pagination (starts from 1). If not provided, defaults to page 1.
+            Each page contains exactly 10 pet records for optimal performance.
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+            example: 1
+          examples:
+            first_page:
+              summary: First page of results
+              value: 1
+            second_page:
+              summary: Second page of results
+              value: 2
+            no_page:
+              summary: Default to first page
+              description: When no page parameter is provided, defaults to page 1
+      responses:
+        '200':
+          description: Successfully retrieved paginated list of pets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pets:
+                    type: array
+                    description: Array of pet records for the current page
+                    items:
+                      $ref: '#/components/schemas/Pet'
+                  currentPage:
+                    type: integer
+                    description: Current page number
+                    example: 1
+                  totalPages:
+                    type: integer
+                    description: Total number of pages available
+                    example: 5
+                required:
+                  - pets
+                  - currentPage
+                  - totalPages
+              examples:
+                successful_listing:
+                  summary: Successful pet listing response
+                  value:
+                    pets:
+                      - _id: "64f8b2a1c3d4e5f6a7b8c9d0"
+                        name: "Buddy"
+                        breed: "Golden Retriever"
+                        age: 3
+                        healthStatus: "Good"
+                        description: "A friendly and energetic dog looking for an active family"
+                        location: "New York, NY"
+                        images: ["https://example.com/buddy1.jpg", "https://example.com/buddy2.jpg"]
+                        createdAt: "2024-01-15T10:30:00.000Z"
+                        updatedAt: "2024-01-20T14:45:00.000Z"
+                      - _id: "64f8b2a1c3d4e5f6a7b8c9d1"
+                        name: "Luna"
+                        breed: "Mixed Breed"
+                        age: 2
+                        healthStatus: "Good"
+                        description: "Sweet and gentle cat who loves cuddles"
+                        location: "Los Angeles, CA"
+                        images: ["https://example.com/luna.jpg"]
+                        createdAt: "2024-01-16T09:15:00.000Z"
+                        updatedAt: "2024-01-16T09:15:00.000Z"
+                    currentPage: 1
+                    totalPages: 5
+                empty_page:
+                  summary: Valid page with no results
+                  description: When requesting a page beyond available data
+                  value:
+                    pets: []
+                    currentPage: 10
+                    totalPages: 5
+        '500':
+          description: Internal Server Error – Database or server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error listing pets"
+                    description: Error message describing the issue
+                  error:
+                    type: string
+                    example: "Database connection failed"
+                    description: Detailed error information
+              examples:
+                database_error:
+                  summary: Database connection error
+                  value:
+                    message: "Error listing pets"
+                    error: "Database connection failed"
+                server_error:
+                  summary: General server error
+                  value:
+                    message: "Error listing pets"
+                    error: "Internal server error"
+
+components:
+  schemas:
+    Pet:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Pet's unique MongoDB ObjectId
+          example: "64f8b2a1c3d4e5f6a7b8c9d0"
+          pattern: '^[0-9a-fA-F]{24}$'
+        name:
+          type: string
+          description: Pet's name
+          example: "Buddy"
+          minLength: 1
+        breed:
+          type: string
+          description: Pet's breed (optional)
+          example: "Golden Retriever"
+          nullable: true
+        age:
+          type: number
+          description: Pet's age in years (optional)
+          example: 3
+          minimum: 0
+          nullable: true
+        healthStatus:
+          type: string
+          description: Pet's current health status
+          enum: ["Good", "Fair", "Delicate"]
+          example: "Good"
+          default: "Good"
+        description:
+          type: string
+          description: Detailed description of the pet (optional)
+          example: "A friendly and energetic dog looking for an active family"
+          nullable: true
+        location:
+          type: string
+          description: Pet's current location (optional)
+          example: "New York, NY"
+          nullable: true
+        images:
+          type: array
+          description: Array of pet image URLs
+          items:
+            type: string
+            format: uri
+            example: "https://example.com/pet-image.jpg"
+          example: ["https://example.com/buddy1.jpg", "https://example.com/buddy2.jpg"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the pet record was created
+          example: "2024-01-15T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the pet record was last updated
+          example: "2024-01-20T14:45:00.000Z"
+      required:
+        - _id
+        - name
+        - healthStatus
+        - createdAt
+        - updatedAt
+      description: Complete pet record with all available information
+
+    PaginatedPetResponse:
+      type: object
+      properties:
+        pets:
+          type: array
+          description: Array of pet records for the current page
+          items:
+            $ref: '#/components/schemas/Pet'
+        currentPage:
+          type: integer
+          description: Current page number (starts from 1)
+          example: 1
+          minimum: 1
+        totalPages:
+          type: integer
+          description: Total number of pages available based on pet count
+          example: 5
+          minimum: 0
+      required:
+        - pets
+        - currentPage
+        - totalPages
+      description: Paginated response containing pet records and pagination metadata
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: High-level error message
+          example: "Error listing pets"
+        error:
+          type: string
+          description: Detailed error information
+          example: "Database connection failed"
+      required:
+        - message
+      description: Standard error response format for API errors
