@@ -1,5 +1,6 @@
 const request = require('supertest');
 const express = require('express');
+const mongoose = require('mongoose');
 const petRoutes = require('../routes/pet.routes');
 const connectDB = require('../config/db');
 
@@ -9,6 +10,10 @@ app.use('/pets', petRoutes);
 
 beforeAll(async () => {
   await connectDB();
+});
+
+afterAll(async () => {
+  await mongoose.connection.close();
 });
 
 describe('GET /pets/list', () => {
