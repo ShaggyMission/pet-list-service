@@ -9,7 +9,7 @@ app.use(express.json());
 
 connectDB();
 
-app.use('/api/pets', petRoutes);
+app.use('/pets', petRoutes);
 
 app.listen(PORT, () => {
   console.log(`pet-list-service is running on port ${PORT}`);

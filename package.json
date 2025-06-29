@@ -1,9 +1,9 @@
 {
-  "name": "nueva-carpeta-(2)",
+  "name": "pet-list-service",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --detectOpenHandles",
     "start": "node server.js"
   },
   "keywords": [],
@@ -13,5 +13,9 @@
   "dependencies": {
     "express": "^5.1.0",
     "mongoose": "^8.16.1"
+  },
+  "devDependencies": {
+    "jest": "^30.0.3",
+    "supertest": "^7.1.1"
   }
 }
