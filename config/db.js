@@ -1,18 +1,13 @@
 const mongoose = require('mongoose');
 
-const uri = 'mongodb+srv://lmpacheco:ZrvwTwBSagITmKAT@cluster0.ny218yj.mongodb.net/shaggymission_pets?retryWrites=true&w=majority&appName=Cluster0';
+const uri = 'mongodb://admin:Lis12345@54.156.27.209:27017/admin';
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  }
-};
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.error('MongoDB connection error:', err));
 
-module.exports = connectDB;
+module.exports = mongoose;
+
