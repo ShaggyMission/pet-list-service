@@ -1,16 +1,23 @@
 const express = require('express');
+const cors = require('cors'); // 👈 Importa cors
 const petRoutes = require('./routes/pet.routes');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 
 const app = express();
 
-const swaggerDocument = YAML.load('./docs/swagger.yaml');
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+};
 
+app.use(cors(corsOptions)); 
 app.use(express.json());
 
-app.use('/pets', petRoutes);
+const swaggerDocument = YAML.load('./docs/swagger.yaml');
 
+app.use('/pets', petRoutes);
 app.use('/listPets-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 module.exports = app;
